@@ -28,9 +28,9 @@ namespace UniverseLib
         }
 
         public const string NAME = "UniverseLib";
-        public const string VERSION = "2.0.0";
-        public const string AUTHOR = "rainbowblood666";
-        public const string GUID = "rainbowblood.universelib";
+        public const string VERSION = "1.5.2";
+        public const string AUTHOR = "Release";
+        public const string GUID = "release.universelib";
 
         /// <summary>The current runtime context (Mono or IL2CPP).</summary>
         public static RuntimeContext Context { get; } =

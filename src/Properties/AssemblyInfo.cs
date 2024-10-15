@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using UniverseLib;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
@@ -10,7 +9,7 @@ using UniverseLib;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany(UniverseLib.Universe.AUTHOR)]
 [assembly: AssemblyProduct(UniverseLib.Universe.NAME)]
-[assembly: AssemblyCopyright("")]
+[assembly: AssemblyCopyright("LGPL 2.1")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -34,3 +33,4 @@ using UniverseLib;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion(UniverseLib.Universe.VERSION)]
 [assembly: AssemblyFileVersion(UniverseLib.Universe.VERSION)]
+
