@@ -142,26 +142,9 @@ namespace UniverseLib.UI.Widgets
             if (!transform)
                 throw new ArgumentNullException(nameof(transform));
 
-            // Refresh cached transforms (no UI rebuild yet).
-            // Stop existing coroutine and do it oneshot.
-            RefreshData(false, false, true, true);
-
-            int transformID = transform.GetInstanceID();
-
-            // find the index of our transform in the list
-            int idx = -1;
-            for (idx = 0; idx < cachedTransforms.Count; idx++)
-            {
-                CachedTransform cache = (CachedTransform)cachedTransforms[idx];
-                if (cache.InstanceID == transformID)
-                    break;
-            }
-
-            if (idx == -1)
-                throw new ArgumentException($"Transform {transform.name} is not cached in this TransformTree.");
-
             // make sure all parents of the object are expanded
             Transform parent = transform.parent;
+
             while (parent)
             {
                 int pid = parent.GetInstanceID();
@@ -171,7 +154,29 @@ namespace UniverseLib.UI.Widgets
                 parent = parent.parent;
             }
 
-            ScrollPool.JumpToIndex(idx, OnCellJumpedTo);
+            // jump after refresh data
+            void doAfterRefresh()
+            {
+                int transformID = transform.GetInstanceID();
+
+                // find the index of our transform in the list
+                int idx = -1;
+                for (idx = 0; idx < cachedTransforms.Count; idx++)
+                {
+                    CachedTransform cache = (CachedTransform)cachedTransforms[idx];
+                    if (cache.InstanceID == transformID)
+                        break;
+                }
+
+                if (idx == -1)
+                    throw new ArgumentException($"Transform {transform.name} is not cached in this TransformTree.");
+
+                ScrollPool.JumpToIndex(idx, OnCellJumpedTo);
+            }
+
+            // Refresh cached transforms (no UI rebuild yet).
+            // Stop existing coroutine and do it oneshot.
+            RefreshData(false, false, true, true, doAfterRefresh);
         }
 
         void OnCellJumpedTo(TransformCell cell)
@@ -198,7 +203,7 @@ namespace UniverseLib.UI.Widgets
         /// <param name="jumpToTop">Should the ScrollPool reset back to the top index?</param>
         /// <param name="stopExistingCoroutine">If false and there is a Refresh coroutine already running, this method will abort.</param>
         /// <param name="oneShot">If true, will not yield any frames in the coroutine (will all happen instantly, now)</param>
-        public void RefreshData(bool andUpdateScrollPool, bool jumpToTop, bool stopExistingCoroutine, bool oneShot)
+        public void RefreshData(bool andUpdateScrollPool, bool jumpToTop, bool stopExistingCoroutine, bool oneShot, Action doOnFinish = null)
         {
             if (refreshCoroutine != null)
             {
@@ -218,10 +223,10 @@ namespace UniverseLib.UI.Widgets
             traversedThisFrame.Reset();
             traversedThisFrame.Start();
 
-            refreshCoroutine = RuntimeHelper.StartCoroutine(RefreshCoroutine(andUpdateScrollPool, jumpToTop, oneShot));
+            refreshCoroutine = RuntimeHelper.StartCoroutine(RefreshCoroutine(andUpdateScrollPool, jumpToTop, oneShot, doOnFinish));
         }
 
-        IEnumerator RefreshCoroutine(bool andRefreshUI, bool jumpToTop, bool oneShot)
+        IEnumerator RefreshCoroutine(bool andRefreshUI, bool jumpToTop, bool oneShot, Action doOnFinish = null)
         {
             // Instead of doing string.IsNullOrEmpty(CurrentFilter) many times, let's just do it once per update.
             bool filtering = Filtering;
@@ -263,6 +268,8 @@ namespace UniverseLib.UI.Widgets
 
             prevDisplayIndex = displayIndex;
             refreshCoroutine = null;
+
+            doOnFinish?.Invoke();
         }
 
         // Recursive method to check a Transform and its children (if expanded).
